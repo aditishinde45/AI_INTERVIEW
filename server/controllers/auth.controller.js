@@ -11,16 +11,18 @@ export const googleAuth=async(req,res)=>{
             })
         }
         let token=await getToken(user._id);
-        res.cookie("token",token,{
-            http:true,
-            secure:false,
-            sameSite:"strict",
-            maxAge:7*24*60*60*1000
-        })
+        res.cookie("token", token, {
+         httpOnly: true,
+         secure: false,
+         sameSite: "strict",
+         maxAge: 7 * 24 * 60 * 60 * 1000
+         });
         return res.status(200).json(user);
     }catch(err){
-        return res.status(500).json({message:`google Auth error :${err}`})
-        console.log(err);
+    console.error(err);
+    return res.status(500).json({
+        message: err.message
+    });
     }
 }
 export const logout=async(req,res)=>{
