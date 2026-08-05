@@ -8,4 +8,4 @@ return token;
     console.log(err);
 }
 }
-export default {getToken};
+export default getToken;
