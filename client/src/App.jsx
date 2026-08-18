@@ -5,6 +5,7 @@ import Home from './pages/Home';
 import axios from 'axios';
 import { useDispatch } from 'react-redux';
 import { setUserData } from './redux/userSlice.js';
+import InterviewPage from "./pages/InterviewPage.jsx";
 export const ServeUrl="http://localhost:8000";
 function App() {
       const dispatch=useDispatch();
@@ -22,11 +23,12 @@ function App() {
     getUser();
     },[dispatch]);
   return (
-    <Routes>
-      <Route path='/' element={<Home/>}/>
-      <Route path='/auth' element={<Auth/>}/>
-    </Routes>
-  )
+  <Routes>
+    <Route path='/' element={<Home />} />
+    <Route path='/auth' element={<Auth />} />
+    <Route path='/interview' element={<InterviewPage />} />
+</Routes>
+)
 }
 
 export default App
