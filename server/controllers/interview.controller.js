@@ -4,8 +4,6 @@ import { askAi } from "../services/openRouter.services.js";
 import { error } from "console";
 import User from "../models/user.model.js";
 import Interview from "../models/interview.model.js";
-import { use } from "react";
-import { parse } from "path";
 export const analyzeResume=async(req,res)=>{
     try{
         if(!req.file){
@@ -53,7 +51,7 @@ export const analyzeResume=async(req,res)=>{
           .replace(/```json/g, "")
           .replace(/```/g, "")
           .trim();
-        const parsed=JSON.parse(aiResponse);
+        const parsed=JSON.parse(cleanResponse);
         fs.unlinkSync(filePath)
 
         res.json({
@@ -79,7 +77,7 @@ export const analyzeResume=async(req,res)=>{
 
 export const generateQuestions=async(req,res)=>{
 try{
-    const {role,experience,mode,resumeText,projects,skills}=req.body;
+    let {role,experience,mode,resumeText,projects,skills}=req.body;
     role=role?.trim();
     experience=experience?.trim();
     mode=mode?.trim();
@@ -151,8 +149,8 @@ Make questions based on the candidate’s role, experience,interviewMode, projec
       }
     ];
 
-    const aiResponse=await askAi(messages);
-
+    const aiResponse=await askAi({messages});
+    //const parsed = JSON.parse(aiResponse);
     if(!aiResponse || !aiResponse.trim()){
         return res.status(500).json({message:"Ai do not given response"});
     }
@@ -185,7 +183,7 @@ Make questions based on the candidate’s role, experience,interviewMode, projec
 
     res.json({
         interviewId:interview._id,
-        creditisLeft:user.credits,
+        creditsLeft:user.credits,
         userName:user.name,
         questions:interview.questions
     })
@@ -280,7 +278,7 @@ Answer: ${answer}
       }
     ];
 
-    const aiResponse=askAi(messages);
+    const aiResponse=askAi({messages});
     
     const parsed=JSON.parse(aiResponse);
     question.confidence=parsed.confidence;
@@ -296,3 +294,66 @@ Answer: ${answer}
         return res.status(500).json({message:`failed to submit answer ${err}`});
     }
 } 
+
+
+export const finishInterview=async (req,res)=>{
+    try{
+        const {interviewId}=req.body;
+        const interview=await Interview.findById(interviewId);
+        if(!interview){
+            return res.status(404).json({message:"failed to find interview"});
+        }
+        const totalQuestions=interview.questions.length;
+
+        let totalScore=0;
+        let totalConfidence=0;
+        let totalCorrectness=0;
+        let totalCommunication=0;
+
+        interview.questions.forEach((q)=>{
+            totalScore+=q.score || 0;
+            totalConfidence+=q.confidence || 0;
+            totalCorrectness+=q.correctness || 0;
+            totalCommunication+=q.communication || 0;
+        });
+        const finalScore=totalQuestions
+        ?totalScore/totalQuestions
+        :0;
+
+        const avgConfidence=totalQuestions
+        ?totalConfidence/totalQuestions
+        :0;
+
+        const avgCorrectness=totalQuestions
+        ?totalCorrectness/totalQuestions
+        :0;
+
+
+        const avgCommunication=totalQuestions
+        ?totalCommunication/totalQuestions
+        :0;
+
+        interview.finalScore=finalScore;
+        interview.status="completed";
+
+        await interview.save();
+
+        return res.status(200).json({
+            finalScore:Number(finalScore.toFixed(1)),
+            confidence:Number(avgConfidence.toFixed(1)),
+            communication:Number(avgCommunication.toFixed(1)),
+            correctness:Number(avgCorrectness.toFixed(1)),
+            questionWiseScore:interview.questions.map((q)=>({
+                question:q.question,
+                score:q.score || 0,
+                feedback:q.feedback|| "",
+                confidence:q.confidence || 0,
+                communication:q.communication || 0,
+                correctness:q.correctness || 0,
+            })),
+
+        })
+    }catch(err){
+        return res.status(500).json({message:`failed to finish interview ${err}`});
+    }
+}

@@ -1,6 +1,8 @@
 import React, { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { motion } from "motion/react";
 import { ServerUrl } from "../config.js";
+import {setUserData} from "../redux/userSlice.js";
 import {
   FaUserTie,
   FaChartLine,
@@ -10,9 +12,11 @@ import {
 } from "react-icons/fa";
 import axios from "axios";
 function Step1Setup({ onStart }) {
+  const {userData}=useSelector((state)=>state.user);
+  const dispatch=useDispatch();
   const [role,setRole]=useState("");
-  const [Experience,setExperience]=useState("");
-  const [mode,setMode]=useState("");
+  const [experience,setExperience]=useState("");
+  const [mode,setMode]=useState("Technical");
   const [resumeFile,setResumeFile]=useState(null);
   const [loading,setLoading]=useState(false);
   const [projects,setProjects]=useState([]);
@@ -57,6 +61,40 @@ function Step1Setup({ onStart }) {
     setAnalyzing(false);
   }
 };
+
+const handleStart=async()=>{
+  setLoading(true);
+  console.log("REQUEST DATA:", {
+  role,
+  experience,
+  mode,
+  resumeText,
+  projects,
+  skills
+});
+  try{
+    const result=await axios.post(ServerUrl + "/api/interview/generate-questions",{
+      role,
+      experience,
+      mode,
+      resumeText,
+      projects,
+      skills
+    },{withCredentials:true});
+    console.log(result.data);
+
+    if(userData){
+      dispatch(setUserData({...userData,credits:result.data.creditsLeft}))
+    }
+    setLoading(false);
+    onStart(result);
+  }catch(err){
+   console.log("STATUS:", err.response?.status);
+    console.log("DATA:", err.response?.data);
+    console.log("FULL ERROR:", err);
+    setLoading(false);
+  }
+}
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -89,7 +127,7 @@ function Step1Setup({ onStart }) {
             {[
               {
                 icon: <FaUserTie className="text-green-600 text-xl" />,
-                text: "Choose Role & Experience",
+                text: "Choose Role & experience",
               },
               {
                 icon: <FaMicrophoneAlt className="text-green-600 text-xl" />,
@@ -150,11 +188,11 @@ function Step1Setup({ onStart }) {
             <div className="relative gap-2">
               <FaBriefcase className="absolute top-4 left-4 text-gray-400"/>
 
-              <input type="text" placeholder="Experience (e.g 2 years)"
+              <input type="text" placeholder="experience (e.g 2 years)"
               className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 
               focus:ring-green-500 outline-none transition "
               onChange={(e)=>setExperience(e.target.value)}
-              value={Experience}
+              value={experience}
               />
             </div>
           </div>
@@ -234,12 +272,13 @@ function Step1Setup({ onStart }) {
               </motion.div>
             )}
             <motion.button 
-            disabled={!role || !Experience}
+            onClick={handleStart}
+            disabled={!role || !experience || loading}
             whileHover={{scale:1.03}}
             whileTap={{scale:.95}}
             className="w-full disabled:bg-gray-600 bg-green-600 hover:bg-green-700 
             text-white py-3 rounded-full text-lg font-semibold transition duration-300 shadow-md">
-              Start Interview
+              {loading ?"Starting...":"Start Interview"}
             </motion.button>
          </div>
 
