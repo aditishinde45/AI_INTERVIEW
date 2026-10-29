@@ -11,10 +11,11 @@ export const googleAuth=async(req,res)=>{
             })
         }
         let token=await getToken(user._id);
+        const isSecure = process.env.NODE_ENV === "production" || req.secure || req.headers["x-forwarded-proto"] === "https";
         res.cookie("token", token, {
           httpOnly: true,
-          secure: false,
-          sameSite: "lax",
+          secure: isSecure,
+          sameSite: isSecure ? "none" : "lax",
           maxAge: 7 * 24 * 60 * 60 * 1000
         });
         return res.status(200).json(user);
@@ -27,7 +28,12 @@ export const googleAuth=async(req,res)=>{
 }
 export const logout=async(req,res)=>{
     try{
-        await res.clearCookie("token")
+        const isSecure = process.env.NODE_ENV === "production" || req.secure || req.headers["x-forwarded-proto"] === "https";
+        res.clearCookie("token", {
+          httpOnly: true,
+          secure: isSecure,
+          sameSite: isSecure ? "none" : "lax",
+        });
         return res.status(200).json({message:"LogOut Successfully!"});
     }catch(err){
         return res.status(500).json({message:`log out error :${err}`})

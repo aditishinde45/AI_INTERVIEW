@@ -8,7 +8,10 @@ import userRouter from "./routes/user.route.js";
 import interviewRouter from "./routes/interview.route.js";
 const app = express();
 dotenv.config();
+app.set("trust proxy", 1);
+
 const allowedOrigins = [
+  "https://ai-interview-dy3z.onrender.com",
   "http://localhost:5173",
   "http://localhost:5174",
   "http://localhost:3000",
@@ -22,7 +25,9 @@ app.use(
       if (!origin) return callback(null, true);
       if (
         allowedOrigins.includes(origin) ||
-        /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)
+        /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin) ||
+        /\.onrender\.com$/.test(origin) ||
+        /\.vercel\.app$/.test(origin)
       ) {
         return callback(null, true);
       }

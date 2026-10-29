@@ -1,1 +1,1 @@
-export const ServerUrl="http://localhost:8000";
+export const ServerUrl = "https://ai-interview-dy3z.onrender.com";

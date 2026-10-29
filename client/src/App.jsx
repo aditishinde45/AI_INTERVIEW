@@ -8,7 +8,7 @@ import axios from 'axios';
 import { useDispatch } from 'react-redux';
 import { setUserData } from './redux/userSlice.js';
 
-export const ServeUrl="http://localhost:8000";
+export const ServeUrl = "https://ai-interview-dy3z.onrender.com";
 
 function App() {
   const dispatch = useDispatch();

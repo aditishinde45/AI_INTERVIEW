@@ -167,7 +167,7 @@ VITE_FIREBASE_APIKEY="your_firebase_web_api_key"
 cd server
 npm run dev
 ```
-*Backend runs on `http://localhost:8000`.*
+*Backend runs on `http://localhost:8000` (Production deployed at: `https://ai-interview-dy3z.onrender.com`).*
 
 ### 2. Start Frontend Client
 ```bash

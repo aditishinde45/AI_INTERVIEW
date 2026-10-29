@@ -66,7 +66,7 @@ export const callOpenRouter = async (messages, temperature = 0.5, maxTokens = 20
           headers: {
             Authorization: `Bearer ${API_KEY}`,
             "Content-Type": "application/json",
-            "HTTP-Referer": "http://localhost:5174",
+            "HTTP-Referer": "https://ai-interview-dy3z.onrender.com",
             "X-Title": "InterviewIQ.AI",
           },
           timeout: 25000,
