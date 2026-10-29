@@ -1,10 +1,5 @@
-import { initializeApp } from "firebase/app";
-import {
-  initializeAuth,
-  browserLocalPersistence,
-  browserPopupRedirectResolver,
-  GoogleAuthProvider,
-} from "firebase/auth";
+import { initializeApp, getApps, getApp } from "firebase/app";
+import { getAuth, GoogleAuthProvider } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_APIKEY,
@@ -15,11 +10,8 @@ const firebaseConfig = {
   appId: "1:818294667405:web:db81409dcd02f6a719cac4",
 };
 
-const app = initializeApp(firebaseConfig);
+const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 
-export const auth = initializeAuth(app, {
-  persistence: browserLocalPersistence,
-  popupRedirectResolver: browserPopupRedirectResolver,
-});
-
+export const auth = getAuth(app);
 export const provider = new GoogleAuthProvider();
+provider.setCustomParameters({ prompt: "select_account" });
